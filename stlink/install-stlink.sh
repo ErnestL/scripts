@@ -99,9 +99,17 @@ if [ "$flag_install" == "YES" ]; then
 	echo "---"
 	echo ""
 	echo "Cleaning project..."
-	make release
+	make clean
 	echo "Making release build..."
 	make release
+
+	# ---------- Install stlink
+
+	echo "---"
+	echo ""
+	echo "Installing..."
+	cd build/Release
+	sudo make install
 	echo "Updating dynamic link library..."
 	sudo ldconfig
 
