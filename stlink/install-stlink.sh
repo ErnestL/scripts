@@ -12,6 +12,7 @@ INSTALL_FOLDER="stlink-install-temp"
 STLINK_GIT_REPOSITORY="https://github.com/texane/stlink"
 STLINK_GIT_BRANCH="88c6162e457568225b2ea9be4c034b7f0e4b566a"
 STLINK_GIT_FOLDER="stlink.git"
+STLINK_GIT_INSTALL_FOLDER="build/Release"
 UDEV_RULES=etc/udev/rules.d
 STLINK_GUI="stlink-gui"
 
@@ -52,8 +53,8 @@ if [ "$flag_gui_exist" == "YES" ] && [ "$flag_hash_match" == "YES" ]; then
     	case $option in
         	[1]* ) break;;
         	[2]* ) flag_install="NO"; break;;
-			[3]* ) exit;;
-        	* ) echo "Please select 1, 2 or 3";;
+		[3]* ) exit;;
+        	   * ) echo "Please select 1, 2 or 3";;
     	esac
 	done
 fi
@@ -99,17 +100,12 @@ if [ "$flag_install" == "YES" ]; then
 	echo "---"
 	echo ""
 	echo "Cleaning project..."
-	make clean
+	make release
 	echo "Making release build..."
 	make release
-
-	# ---------- Install stlink
-
-	echo "---"
-	echo ""
-	echo "Installing..."
-	cd build/Release
-	sudo make install
+	echo "Installing release build..."
+	cd $STLINK_GIT_INSTALL_FOLDER
+	sudo make install 
 	echo "Updating dynamic link library..."
 	sudo ldconfig
 
@@ -128,6 +124,17 @@ fi
 
 echo "---"
 echo ""
+echo "Note: The power micro flash may contain old update image which is not erased when programming the run image. In this case the bootloader will override a newly flash run image with the old update image. To avoid such unwanted override select option to completely erase flash, before flashing new run image."
+echo ""
+while true; do
+    	read -p "Ensure STLink is connected to powered target and select option: 1. Completely erase flash, 2. Skip, 3. Exit >> " option
+    	case $option in
+        	[1]* ) st-flash --reset erase; break;;
+        	[2]* ) break;;
+		[3]* ) exit;;
+        	   * ) echo "Please select 1, 2 or 3";;
+    	esac
+	done
 echo "Starting the stlink GUI..."
 stlink-gui
 
